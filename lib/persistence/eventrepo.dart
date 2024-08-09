@@ -1,18 +1,21 @@
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ndovaj/models/event_model.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'dart:developer' as developer;
+
 class EventRepo{
   static final DateTime CUSTOM_DATE = DateTime.parse("1999-01-01T00:00:00Z");
   static final DateTime DEFAULT_LAST_EVENT_UPDATE = 
-      DateTime.parse("2024-08-08T7:45:45Z");
+      DateTime.parse("2024-08-08T20:45:45Z");
   
   DateTime lastEventUpdate = DEFAULT_LAST_EVENT_UPDATE;
   List<Event> events = [];
   List<Event> nearbyEvents = [];
-
+ 
   String error = "";
 
   late String _cachedNewEv;
@@ -26,12 +29,14 @@ class EventRepo{
     final String resp = await rootBundle.loadString('assets/events.json');
     final data = await json.decode(resp);
 
-
+    
     return data;
   }
 
   Future<void> load() async {
     String data = await loadString();
+    developer.log("data");
+    
     parse(data);
   }
 
@@ -60,7 +65,7 @@ class EventRepo{
   Future<(bool, DateTime)> checkQuestionUpdates() async {
     DateTime date = await getLastEventFileDate();
     String content = await downloadFile();
-    
+    print(content);
     _cachedNewDate = date;
 
     return (date.isAfter(lastEventUpdate), date);
@@ -130,13 +135,13 @@ class EventRepo{
     events.clear();
     nearbyEvents.clear();
     error = "";
-
+    debugPrint(content);
     //List eventList = [];
     //events = List<Event>.from(content["events"] as List);
-   
+
   }
 
-  List<Event> getQuestions() {
+  List<Event> getEvents() {
     return events;
   }
 }

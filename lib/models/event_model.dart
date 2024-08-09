@@ -1,5 +1,6 @@
 // TODO: modify hardly
 import 'package:ndovaj/persistence/eventrepo.dart';
+
 class Event {
   String name;
   String description;
@@ -19,9 +20,10 @@ class Event {
     required this.description,
   });
 }
+EventRepo repo = EventRepo();
+final List<Event> upcomingEvents = repo.getEvents();
+final List<Event> nearbyEvents = repo.nearbyEvents;
 
-List<Event> upcomingEvents = EventRepo().events;
-List<Event> nearbyEvents = EventRepo().nearbyEvents;
 /*
 final List<Event> upcomingEvents = [
   Event(
