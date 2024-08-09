@@ -37,7 +37,7 @@ class EventRepo{
 
   Future<DateTime> getLastEventFileDate() async{
     DateTime date ;
-    http.Repsonse response = await http.get(Uri.parse(
+    http.Response response = await http.get(Uri.parse(
       'https://api.github.com/repos/cronoimpius/ndovaj/commits?path=events.json&page=1&per_page=1'
     ));
 
