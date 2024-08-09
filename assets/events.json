@@ -8,6 +8,24 @@
             "location": "Bonefro",
             "organizer": "Bonefro",
             "price": "free"
+        },
+        {
+            "name": "Bonefro Rock",
+            "eventDate": 3,
+            "image": "url",
+            "description": "music event",
+            "location": "Bonefro",
+            "organizer": "Bonefro",
+            "price": "free"
+        },
+        {
+            "name": "Bonefro Rock",
+            "eventDate": 3,
+            "image": "url",
+            "description": "music event",
+            "location": "Bonefro",
+            "organizer": "Bonefro",
+            "price": "free"
         }
     ]
 }
