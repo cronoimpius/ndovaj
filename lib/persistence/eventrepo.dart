@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:ndovaj/models/event_model.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:io';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
 
 import 'dart:developer' as developer;
 
@@ -21,21 +23,24 @@ class EventRepo{
   late String _cachedNewEv;
   late DateTime _cachedNewDate;
 
-  Future<String> loadString() async{
-    final prefs = await SharedPreferences.getInstance();
+  Future<Map<String, dynamic>> loadString() async{
+    //final prefs = await SharedPreferences.getInstance();
+    final date = getLastEventFileDate();
 
-    lastEventUpdate = DateTime.parse(prefs.getString("lastEventUpdate") ?? DEFAULT_LAST_EVENT_UPDATE.toString());
-
-    final String resp = await rootBundle.loadString('assets/events.json');
-    final data = await json.decode(resp);
-
+    Directory appDir = await getApplicationDocumentsDirectory();
+    String filePath = "./assets/events.json";
     
-    return data;
+    //lastEventUpdate = DateTime.parse(date.toString() ?? DEFAULT_LAST_EVENT_UPDATE.toString());
+
+    final String resp = await File(filePath).readAsString();
+    Map<String, dynamic> jmap = jsonDecode(resp);
+        
+    return jmap;
   }
 
   Future<void> load() async {
-    String data = await loadString();
-    developer.log("data");
+    Map<String, dynamic> data = await loadString();
+    //debugPrint("data");
     
     parse(data);
   }
@@ -43,7 +48,7 @@ class EventRepo{
   Future<DateTime> getLastEventFileDate() async{
     DateTime date ;
     http.Response response = await http.get(Uri.parse(
-      'https://api.github.com/repos/cronoimpius/ndovaj/commits?path=events.json&page=1&per_page=1'
+      'https://api.github.com/repos/cronoimpius/ndovaj/commits?path=/assets/events.json&page=1&per_page=1'
     ));
 
     try {
@@ -62,7 +67,7 @@ class EventRepo{
   }
 
    /// Returns true if there is a more recent questions file
-  Future<(bool, DateTime)> checkQuestionUpdates() async {
+  Future<(bool, DateTime)> checkEventUpdate() async {
     DateTime date = await getLastEventFileDate();
     String content = await downloadFile();
     print(content);
@@ -117,10 +122,14 @@ class EventRepo{
     }
     
     // Update file
-    
+    Directory appDir = await getApplicationSupportDirectory();
+    String filePath = "./assets/events.json";
+    File file = File(filePath);
+
+    file.writeAsString(content);
 
     // Load to repository
-    parse(content);
+    //parse(content);
 
     return true;
   }
@@ -131,17 +140,17 @@ class EventRepo{
   }
 
   // Parse a string and save each question in the repository
-  void parse(String content) async {
-    events.clear();
-    nearbyEvents.clear();
+  void parse(Map<String, dynamic> content) async {
+    //events.clear();
+    //nearbyEvents.clear();
     error = "";
-    debugPrint(content);
-    //List eventList = [];
-    //events = List<Event>.from(content["events"] as List);
-
+    List<dynamic> devents = content['events'];
+    events = devents.map((e) => Event.fromJson(e)).toList();
+    //print("inside parse ${events[0].description}");
   }
 
   List<Event> getEvents() {
+    //print("inside get${events.length}");
     return events;
   }
 }

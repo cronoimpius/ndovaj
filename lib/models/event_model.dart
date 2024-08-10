@@ -19,10 +19,22 @@ class Event {
     required this.price,
     required this.description,
   });
+
+  factory Event.fromJson(Map<String, dynamic> json) {
+    int dur= json['eventDate'];
+    return Event(
+      name: json['name'],
+      eventDate: DateTime.now().add(Duration(days: dur)),
+      image: json['image'],
+      description: json['description'],
+      location: json['location'],
+      organizer: json['organizer'],
+      price: json['price'],
+    );
+  }
+
 }
 EventRepo repo = EventRepo();
-final List<Event> upcomingEvents = repo.getEvents();
-final List<Event> nearbyEvents = repo.nearbyEvents;
 
 /*
 final List<Event> upcomingEvents = [

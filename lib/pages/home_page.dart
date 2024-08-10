@@ -20,6 +20,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
   int _currentIndex = 0;
 
+  List<Event> nearbyEvents = repo.nearbyEvents;
+  List<Event> upcomingEvents = repo.getEvents();
+    
   late ScrollController scrollController = ScrollController();
   late AnimationController controller = AnimationController(
     vsync: this,
@@ -30,6 +33,15 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     duration: const Duration(microseconds: 1),
   );
   late Animation<double> opacity;
+
+  void load(){
+    setState(() {
+      repo.load();
+      nearbyEvents = repo.events;
+      upcomingEvents = repo.events;
+      //print("length ${nearbyEvents.length}");
+    });
+  }
 
   void viewEventDetail(Event event) {
     Navigator.of(context).push(
@@ -49,6 +61,16 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
 
   @override
   void initState() {
+    
+    print(repo.getLastEventFileDate());
+    repo.load().then((_){
+      load();
+    });
+    //List<Event> nearbyEvents = repo.nearbyEvents;
+    //List<Event> upcomingEvents = repo.getEvents(); 
+    print(upcomingEvents.length);
+    
+    
     opacity = Tween(begin: 1.0, end: 0.0).animate(CurvedAnimation(
       curve: Curves.linear,
       parent: opacityController,
@@ -65,6 +87,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
     controller.dispose();
     scrollController.dispose();
     opacityController.dispose();
+    repo.load();
     super.dispose();
   }
 
@@ -80,7 +103,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                buildSearchAppBar(),
+                //buildSearchAppBar(),
                 UIHelper.verticalSpace(16),
                 buildUpComingEventList(),
                 UIHelper.verticalSpace(16),
@@ -96,13 +119,13 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButtonAnimator: FloatingActionButtonAnimator.scaling,
-      floatingActionButton: FloatingActionButton(
+      /*floatingActionButton: FloatingActionButton(
         onPressed: () {},
         child: const Icon(FontAwesomeIcons.qrcode),
-      ),
+      ),*/
     );
   }
-
+/*
   Widget buildSearchAppBar() {
     const inputBorder = UnderlineInputBorder(
       borderSide: BorderSide(color: Colors.white),
@@ -120,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
         ),
       ),
     );
-  }
+  }*/
 
   Widget buildUpComingEventList() {
     return Container(
@@ -138,7 +161,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
             child: ListView.builder(
               itemCount: upcomingEvents.length,
               physics: const BouncingScrollPhysics(),
-              scrollDirection: Axis.horizontal,
+              scrollDirection: Axis.horizontal, //for use it on windows try shift+scroll
               itemBuilder: (context, index) {
                 final event = upcomingEvents[index];
                 return UpComingEventCard(event: event, onTap: () => viewEventDetail(event));
@@ -163,7 +186,7 @@ class _MyHomePageState extends State<MyHomePage> with TickerProviderStateMixin {
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              const Text("Nearby Concerts", style: headerStyle),
+              const Text("Nearby Events", style: headerStyle),
               const Spacer(),
               const Icon(Icons.more_horiz),
               UIHelper.horizontalSpace(16),
