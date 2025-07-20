@@ -1,0 +1,24 @@
+{{if .}}
+  {{range .}}
+    <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-sm">
+      <div>
+        <h3 class="text-xl font-semibold">{{.Title}}</h3>
+        <p class="text-gray-600">{{.Date}}</p>
+        <p class="text-gray-500">{{.Location}}</p>
+      </div>
+      <div class="flex space-x-2">
+        <a href="/events/edit/{{.ID}}" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition duration-200">
+          Edit
+        </a>
+        <form hx-post="/delete-event" hx-target="#eventList" hx-swap="innerHTML" method="POST">
+          <input type="hidden" name="id" value="{{.ID}}">
+          <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-200">
+            Remove
+          </button>
+        </form>
+      </div>
+    </div>
+  {{end}}
+{{else}}
+  <p class="text-center text-gray-500">No events found. Add one above!</p>
+{{end}}

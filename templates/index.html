@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ndovaj</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css " />
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js "></script>
+  <script src="/static/map.js"></script>
+  <script src="https://cdn.tailwindcss.com "></script>
+  <script src="https://unpkg.com/htmx.org "></script>
+  <style>
+    #map {
+      height: 400px; /* Fixed height for the map */
+      border-radius: 0.5rem;
+    }
+    .event-marker {
+      position: absolute;
+      width: 1rem;
+      height: 1rem;
+      background-color: #ef4444;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50 font-sans">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-teal-500 to-cyan-600 text-white py-8 px-4">
+    <div class="container mx-auto text-center">
+      <h1 class="text-4xl font-bold">Ndovaj</h1>
+      <p class="mt-2 text-lg">Trova eventi in Molise</p>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto p-6 grid grid-cols-1 md:grid-cols-3 gap-8">
+    <!-- Event Form -->
+    <div class="md:col-span-1 bg-white shadow-lg rounded-lg p-6">
+      <h2 class="text-2xl font-semibold mb-4">Add New Event</h2>
+      <form id="eventForm" hx-post="/add-event" hx-target="#eventList" hx-swap="innerHTML" method="POST">
+        <div class="space-y-4">
+          <input
+            type="text"
+            name="title"
+            placeholder="Event Title"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+          <input
+            type="date"
+            name="date"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+          <input
+            type="text"
+            name="location"
+            placeholder="Location"
+            required
+            class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+          />
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input
+              type="number"
+              step="any"
+              name="latitude"
+              placeholder="Latitude"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+            <input
+              type="number"
+              step="any"
+              name="longitude"
+              placeholder="Longitude"
+              required
+              class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500"
+            />
+          </div>
+          <button type="submit" class="w-full px-6 py-2 bg-teal-500 text-white rounded-md hover:bg-teal-600 transition duration-200">
+            Add Event
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Event Map -->
+    <div class="md:col-span-2 bg-white shadow-lg rounded-lg p-6 relative overflow-hidden">
+      <h2 class="text-2xl font-semibold mb-4">Event Map</h2>
+      <div id="map"></div>
+    </div>
+
+    <!-- Event List -->
+    <div class="md:col-span-3 bg-white shadow-lg rounded-lg p-6 space-y-4">
+      <h2 class="text-2xl font-semibold mb-4">Event List</h2>
+      <div id="eventList">
+        {{if .}}
+          {{range .}}
+            <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg shadow-sm">
+              <div>
+                <h3 class="text-xl font-semibold">{{.Title}}</h3>
+                <p class="text-gray-600">{{.Date}}</p>
+                <p class="text-gray-500">{{.Location}}</p>
+              </div>
+              <div class="flex space-x-2">
+                <a href="/events/edit/{{.ID}}" class="px-4 py-2 bg-yellow-500 text-white rounded-md hover:bg-yellow-600 transition duration-200">
+                  Edit
+                </a>
+                <form hx-post="/delete-event" hx-target="#eventList" hx-swap="innerHTML" method="POST">
+                  <input type="hidden" name="id" value="{{.ID}}">
+                  <button type="submit" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition duration-200">
+                    Delete
+                  </button>
+                </form>
+              </div>
+            </div>
+          {{end}}
+        {{else}}
+          <p class="text-center text-gray-500">No events found. Add one above!</p>
+        {{end}}
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-800 text-white py-6 mt-8">
+    <div class="container mx-auto text-center">
+      <p>&copy; 2025 Ndovaj. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Leaflet JS -->
+  <script src="/static/leaflet.js"></script>
+  <script src="/static/map.js"></script>
+</body>
+</html>

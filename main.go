@@ -4,10 +4,11 @@ import(
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"html/templates"
+	"html/template"
 	"log"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 	_ "github.com/mattn/go-sqlite3"
@@ -17,7 +18,7 @@ import(
 // Event structure
 type Event struct{
 	ID			int			`json:"id"`
-	Tilte		string		`json:"titles"`
+	Title		string		`json:"title"`
 	Description	string		`json:"description"`
 	Date 		time.Time	`json:"date"`
 	Location	string		`json:"location"`
@@ -32,7 +33,7 @@ type UserLocation struct{
 	Longitude	float64		`json:"longitude"`
 }
 
-var db *sql.db
+var db *sql.DB
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {return true},
 }
@@ -69,7 +70,7 @@ func initDB() {
 		latitude REAL NOT NULL,
 		longitude REAL NOT NULL
 	);`
-	_, err = db.Exec(createEventsTable)
+	_, err = db.Exec(createUsersTable)
 	if err != nil{
 		panic(err)
 	}
@@ -129,7 +130,7 @@ func saveUserLocation(lat, lng float64) {
 
 func main(){
 	initDB()
-	defer db.close()
+	defer db.Close()
 
 	// Serve static
 	fs:= http.FileServer(http.Dir("static"))
@@ -138,12 +139,12 @@ func main(){
 	//Home page route
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request){
 		events := getEvents()
-		tmpl := template.Must(template.ParseFile("templates/index.html"))
+		tmpl := template.Must(template.ParseFiles("templates/index.html"))
 		tmpl.Execute(w, events)
 	})
 
 	//Add event route
-	http.HandleFunc("/add-event", func(w, http.ResponseWriter, r * http.Request){
+	http.HandleFunc("/add-event", func(w http.ResponseWriter, r *http.Request){
 		if r.Method == http.MethodPost{
 			r.ParseForm()
 			dateString := r.FormValue("date")
@@ -167,6 +168,37 @@ func main(){
 		}
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 	})
+	// Delete Event
+	http.HandleFunc("/delete-event", func(w http.ResponseWriter, r *http.Request) {
+    if r.Method == http.MethodPost {
+        r.ParseForm()
+        id := r.FormValue("id")
+        stmt, err := db.Prepare("DELETE FROM events WHERE id = ?")
+        if err != nil {
+            http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+            return
+        }
+        defer stmt.Close()
+
+        _, err = stmt.Exec(id)
+        if err != nil {
+            http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+            return
+        }
+
+        events := getEvents()
+        tmpl := template.Must(template.ParseFiles("templates/event-list.html"))
+        tmpl.Execute(w, events)
+    }
+	})
+
+	//Fetch Events as JSON -> map related
+	http.HandleFunc("/api/events", func(w http.ResponseWriter, r *http.Request) {
+    events := getEvents()
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(events)
+	})
+
 	fmt.Println("Server running on http://localhost:8080")
     http.ListenAndServe(":8080", nil)
 }
